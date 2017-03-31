@@ -1,0 +1,12 @@
+#hdr
+#include <iostream>
+#include "src/test.h"
+#end
+
+using namespace std;  
+
+int main()  
+{  
+    cout << Test::g() << endl;
+    //
+}  

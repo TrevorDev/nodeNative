@@ -1,0 +1,75 @@
+Web:
+HTML - what to display
+
+<body>
+	<button>Click</button>
+	<img src="image.jpg">
+</body>
+
+CSS - how to display
+
+<body>
+	<button style="position: absolute; left: 10px; top: 10px; color: #FF0000">Click</button>
+	<img src="image.jpg">
+</body>
+
+Javascript - what to do
+
+<body>
+	<button style="position: absolute; left: 10px; top: 10px; color: #FF0000">Click</button>
+	<img src="image.jpg">
+</body>
+<script>
+	var cat = {numberEyes: 2, speak: function(){console.log("meow")}}
+	alert("hi")
+	var x = 0;
+	alert(x)
+	x = 100
+	var y = 5
+	x = x + 5
+	alert(x)
+
+	var myFunction = function(){
+		console.log("hit")
+		console.log("hit2")
+	}
+
+	setTimeout(myFunction, 1000)
+</script>
+
+Program languages:
+	Best to know:
+		C
+		C++
+		C#
+		Javascript
+	Other:
+		Typescript
+		Java
+		Python
+		Rust
+		Go
+		Lua
+		Haskell
+		Closure
+		Scala
+
+
+Libraries:
+NodeJS
+Vue
+Sequelize
+Jquery
+Bootstrap
+Boost
+Jade
+...
+
+
+var x = 1
+
+if(x == 0){
+	console.log("hi")
+}else{
+	console.log("no")
+}

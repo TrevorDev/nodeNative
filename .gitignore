@@ -1,0 +1,10 @@
+node_modules/
+cache/
+bower_components/
+*.js
+*.map
+*.cpp
+*.h
+*.exe
+*.o
+!gulpfile.js
