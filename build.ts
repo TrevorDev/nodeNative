@@ -43,10 +43,10 @@ var build = async(obj, time?)=>{
 		if(needBuild){
 			//build and print output
 			console.log("Building: "+obj.name+":  "+obj.cmd)
-			var command = new Command(obj.cmd);
+			var command = new Command(obj.cmd, {log: true});
 			var result:any = await command.run()
-			console.log(result.stdout)
-			console.log(result.stderr)
+			//console.log(result.stdout)
+			//console.log(result.stderr)
 			return true
 		}else{
 			return false
@@ -96,13 +96,22 @@ var getLzzDep = async(lzzFile)=>{
 }
 
 var main = async()=>{
+	var target = process.argv[2]
+	if(!target){
+		target = "main"
+	}
 	var make = {
 		main: {
 			name: "main.exe",
 			dep: ["main.o", "src/test.o"],
 			cmd: "g++ -o main main.o src/test.o"
+		},
+		gyp: {
+			name: "build",
+			dep: ["bindings.cpp"],
+			cmd: "node-gyp build"
 		}
 	}
-	await build(make.main)
+	await build(make[target])
 }
 main()
