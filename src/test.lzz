@@ -1,5 +1,0 @@
-class Test
-{
-public:
-  static int g (int j = 1) { return j; }
-};

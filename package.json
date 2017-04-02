@@ -9,7 +9,9 @@
     "fs-readfile-promise": "^3.0.0",
     "nifty-cmd": "^1.0.0"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "@types/node": "^7.0.12"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

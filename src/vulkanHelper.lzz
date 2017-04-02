@@ -1,0 +1,12 @@
+class VulkanHelper
+{
+public:
+  int num;
+  VulkanHelper(void){
+  	//num = 5;////;//////
+  };
+  int getNum(){
+  	return this->num;
+  }
+  static double version () { return 0.1; };
+};

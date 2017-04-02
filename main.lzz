@@ -1,12 +1,15 @@
 #hdr
 #include <iostream>
-#include "src/test.h"
+#include "src/vulkanHelper.h"
 #end
 
 using namespace std;  
 
 int main()  
 {  
-    cout << Test::g() << endl;
+	VulkanHelper* v = new VulkanHelper();//
+
+    cout << (v == NULL) << endl;//
     //
+    //v->getNum();
 }  

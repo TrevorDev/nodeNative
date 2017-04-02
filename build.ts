@@ -5,7 +5,7 @@ var path = require('path');
 
 var getTime = async(file)=>{
 	try{
-		var stats = await fsp.stat(path.join(__dirname,file))
+		var stats = await fsp['stat'](path.join(__dirname,file))
 		return stats.mtime.getTime()
 	}catch(e){
 		return -1;
@@ -24,9 +24,10 @@ var build = async(obj, time?)=>{
 	if(obj.cmd){
 		//build all dependencies if needed, build this if any dependencies needed to be built
 		for(var i = 0;i<obj.dep.length;i++){
+			//console.log(obj.dep[i])
 			var thisFileTime = await getTime(obj.dep[i])
 			var built = await build(obj.dep[i], thisFileTime)
-			needBuild = needBuild || built
+			needBuild = needBuild || built || (thisFileTime > time)
 		}
 
 		//build this if this file doesnt exit
@@ -35,11 +36,14 @@ var build = async(obj, time?)=>{
 			needBuild = true
 		}
 
-		//Debug
-		//console.log(obj.name+":  "+modTime+" "+time+" "+(modTime > time))
+		
 
 		//build if dependents are newer than target
 		needBuild = needBuild || (modTime > time)
+
+		//Debug
+		//console.log(obj.name+":  "+modTime+" "+time+" "+(modTime > time)+" "+needBuild)
+
 		if(needBuild){
 			//build and print output
 			console.log("Building: "+obj.name+":  "+obj.cmd)
@@ -61,7 +65,7 @@ var build = async(obj, time?)=>{
 			return await build({
 				name: o,
 				dep: [cpp, h],
-				cmd: "g++ -Wall -Wextra -Werror -o "+o +" -c "+cpp
+				cmd: "g++ -std=c++11 -Wall -Wextra -Werror -o "+o +" -c "+cpp
 			}, time)
 		}
 
@@ -69,14 +73,19 @@ var build = async(obj, time?)=>{
 		match = obj.match(/(.*)\.cpp$/)
 		match = match ? match : obj.match(/(.*)\.h/)
 		if(match){
+			var file = match[0]
 			var lzz = match[1]+".lzz"
 			var dep = await getLzzDep(lzz)
+			dep.push(lzz)
 			return await build({
-				name: lzz,
-				dep:dep,
+				name: file,
+				dep: dep,
 				cmd: "lzz "+lzz
 			}, time)
 		}
+
+		//console.log("No build for: "+ obj);
+		return false;
 	}
 }
 
@@ -103,8 +112,8 @@ var main = async()=>{
 	var make = {
 		main: {
 			name: "main.exe",
-			dep: ["main.o", "src/test.o"],
-			cmd: "g++ -o main main.o src/test.o"
+			dep: ["main.o", "src/vulkanHelper.o"],
+			cmd: "g++ -o main main.o src/vulkanHelper.o"
 		},
 		gyp: {
 			name: "build",
