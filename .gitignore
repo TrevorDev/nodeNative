@@ -9,3 +9,4 @@ build/
 *.o
 !gulpfile.js
 *.js
+libstdc++-6.dll

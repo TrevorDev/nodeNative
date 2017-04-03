@@ -3,6 +3,11 @@ import readFile = require("fs-readfile-promise")
 import fsp = require("fs-promise")
 var path = require('path');
 
+var compiler = "g++"
+var flags = "-m32 -c -std=c++11 -Wall -Wextra -Werror"
+var include = "-I D:\\Programs\\vulkan\\1.0.37.0\\Include"
+var libs = "-L D:\\Programs\\vulkan\\1.0.37.0\\Bin32 -lvulkan-1"
+
 var getTime = async(file)=>{
 	try{
 		var stats = await fsp['stat'](path.join(__dirname,file))
@@ -12,34 +17,23 @@ var getTime = async(file)=>{
 	}
 }
 
-var build = async(obj, time?)=>{
+var build = async(obj)=>{
 	var needBuild = false;
 
-	//get the last modified time of the file being built to compare against dependencies
-	if(!time){
-		time = await getTime(obj.name)
-		needBuild = true
-	}
-
 	if(obj.cmd){
+		//get the last modified time of the file being built to compare against dependencies
+		var time = await getTime(obj.name)
+		if(time == -1){
+			needBuild = true
+		}
+
 		//build all dependencies if needed, build this if any dependencies needed to be built
 		for(var i = 0;i<obj.dep.length;i++){
 			//console.log(obj.dep[i])
 			var thisFileTime = await getTime(obj.dep[i])
-			var built = await build(obj.dep[i], thisFileTime)
+			var built = await build(obj.dep[i])
 			needBuild = needBuild || built || (thisFileTime > time)
 		}
-
-		//build this if this file doesnt exit
-		var modTime = await getTime(obj.name)
-		if(modTime == -1){
-			needBuild = true
-		}
-
-		
-
-		//build if dependents are newer than target
-		needBuild = needBuild || (modTime > time)
 
 		//Debug
 		//console.log(obj.name+":  "+modTime+" "+time+" "+(modTime > time)+" "+needBuild)
@@ -65,8 +59,8 @@ var build = async(obj, time?)=>{
 			return await build({
 				name: o,
 				dep: [cpp, h],
-				cmd: "g++ -std=c++11 -Wall -Wextra -Werror -o "+o +" -c "+cpp
-			}, time)
+				cmd: compiler+" "+flags+" -o "+o +" -c "+cpp + " "+include+" "+libs
+			})
 		}
 
 		//cpp and header files rely on lzz files, these are intermidiate files so I just build lzz file here
@@ -81,7 +75,7 @@ var build = async(obj, time?)=>{
 				name: file,
 				dep: dep,
 				cmd: "lzz "+lzz
-			}, time)
+			})
 		}
 
 		//console.log("No build for: "+ obj);
@@ -95,7 +89,8 @@ var getLzzDep = async(lzzFile)=>{
 	var lines = res.toString().split("\n")
 	var dep = lines.map((l)=>{
 		var match = l.match(/#include \"(.*)\"/)
-		if(match){
+		var matchIgnore = l.match(/\/\//)
+		if(match && !matchIgnore){
 			return match[1]
 		}else{
 			return ""
@@ -113,7 +108,7 @@ var main = async()=>{
 		main: {
 			name: "main.exe",
 			dep: ["main.o", "src/vulkanHelper.o"],
-			cmd: "g++ -o main main.o src/vulkanHelper.o"
+			cmd: compiler+" -o main main.o src/vulkanHelper.o "+include+" "+libs
 		},
 		gyp: {
 			name: "build",

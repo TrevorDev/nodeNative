@@ -12,3 +12,6 @@ http://gnuwin32.sourceforge.net/packages/make.htm
 
 Autocomplete:
 https://github.com/niosus/EasyClangComplete
+
+Formatting:
+SublimeAStyleFormatter

@@ -7,9 +7,9 @@ using namespace std;
 
 int main()  
 {  
-	VulkanHelper* v = new VulkanHelper();//
-
-    cout << (v == NULL) << endl;//
-    //
-    //v->getNum();
+	VulkanHelper* v = new VulkanHelper();
+	v->initDevice();
+	uint32_t bufferSize = sizeof(int32_t) * 10;
+	v->allocGPUMemory(bufferSize);
+    cout << v->num << endl;
 }  

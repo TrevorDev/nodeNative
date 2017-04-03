@@ -7,7 +7,7 @@
     "fs-extra-promise": "^0.4.1",
     "fs-promise": "^2.0.2",
     "fs-readfile-promise": "^3.0.0",
-    "nifty-cmd": "^1.0.0"
+    "nifty-cmd": "^1.0.1"
   },
   "devDependencies": {
     "@types/node": "^7.0.12"
