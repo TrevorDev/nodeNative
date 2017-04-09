@@ -15,3 +15,6 @@ https://github.com/niosus/EasyClangComplete
 
 Formatting:
 SublimeAStyleFormatter
+
+vulkan compute tutorial
+https://gist.github.com/sheredom/523f02bbad2ae397d7ed255f3f3b5a7f

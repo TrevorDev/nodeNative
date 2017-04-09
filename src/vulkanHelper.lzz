@@ -12,13 +12,14 @@
 class VulkanHelper
 {
 public:
-	VkInstance instance;
-	VkPhysicalDevice defaultPhysicalDevice;
-	VkDevice device;
-	int num;
+	VkInstance m_instance;
+	VkPhysicalDevice m_defaultPhysicalDevice;
+	VkDevice m_device;
+	uint32_t m_queueFamilyIndex;
+	int m_num;
 
 	VulkanHelper(void) {
-		this->num = 5;
+		this->m_num = 5;
 
 		//Vulcan init config
 		const VkApplicationInfo applicationInfo = {
@@ -42,26 +43,26 @@ public:
 		};
 
 		//Init Vulkan
-		BAIL_ON_BAD_RESULT(vkCreateInstance(&instanceCreateInfo, 0, &this->instance));
+		BAIL_ON_BAD_RESULT(vkCreateInstance(&instanceCreateInfo, 0, &this->m_instance));
 	};
 
 	void initDevice() {
 		//Get default device
 		uint32_t physicalDeviceCount = 0;
-		BAIL_ON_BAD_RESULT(vkEnumeratePhysicalDevices(this->instance, &physicalDeviceCount, 0));
+		BAIL_ON_BAD_RESULT(vkEnumeratePhysicalDevices(this->m_instance, &physicalDeviceCount, 0));
 		VkPhysicalDevice* const physicalDevices = (VkPhysicalDevice*)malloc(sizeof(VkPhysicalDevice) * physicalDeviceCount);
-		BAIL_ON_BAD_RESULT(vkEnumeratePhysicalDevices(this->instance, &physicalDeviceCount, physicalDevices));
-		this->defaultPhysicalDevice = physicalDevices[0];
+		BAIL_ON_BAD_RESULT(vkEnumeratePhysicalDevices(this->m_instance, &physicalDeviceCount, physicalDevices));
+		this->m_defaultPhysicalDevice = physicalDevices[0];
 
 		//Get device initialization config
-		uint32_t queueFamilyIndex = 0;
-		BAIL_ON_BAD_RESULT(VulkanHelper::vkGetBestComputeQueueNPH(defaultPhysicalDevice, &queueFamilyIndex));
+		this->m_queueFamilyIndex = 0;
+		BAIL_ON_BAD_RESULT(VulkanHelper::vkGetBestComputeQueueNPH(m_defaultPhysicalDevice, &this->m_queueFamilyIndex));
 		const float queuePrioritory = 1.0f;
 		const VkDeviceQueueCreateInfo deviceQueueCreateInfo = {
 			VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
 			0,
 			0,
-			queueFamilyIndex,
+			this->m_queueFamilyIndex,
 			1,
 			&queuePrioritory
 		};
@@ -79,20 +80,20 @@ public:
 		};
 
 		//Initialize logical device
-		BAIL_ON_BAD_RESULT(vkCreateDevice(defaultPhysicalDevice, &deviceCreateInfo, 0, &this->device));
+		BAIL_ON_BAD_RESULT(vkCreateDevice(m_defaultPhysicalDevice, &deviceCreateInfo, 0, &this->m_device));
 	};
 
-	void allocGPUMemory(uint32_t bufferSize) {
+	VkDeviceMemory allocGPUMemory(uint32_t bufferSize) {
 		VkPhysicalDeviceMemoryProperties properties;
 
-		vkGetPhysicalDeviceMemoryProperties(this->defaultPhysicalDevice, &properties);
+		vkGetPhysicalDeviceMemoryProperties(this->m_defaultPhysicalDevice, &properties);
 
 		// const int32_t bufferLength = 16384;
 
 		// const uint32_t bufferSize = sizeof(int32_t) * bufferLength;
 
 		// we are going to need two buffers from this one memory
-		const VkDeviceSize memorySize = bufferSize * 2;
+		const VkDeviceSize memorySize = bufferSize;
 
 		// set memoryTypeIndex to an invalid entry in the properties.memoryTypes array
 		uint32_t memoryTypeIndex = VK_MAX_MEMORY_TYPES;
@@ -116,11 +117,47 @@ public:
 		};
 		
 		VkDeviceMemory memory;
-    	BAIL_ON_BAD_RESULT(vkAllocateMemory(device, &memoryAllocateInfo, 0, &memory));
+    	BAIL_ON_BAD_RESULT(vkAllocateMemory(this->m_device, &memoryAllocateInfo, 0, &memory));
+    	return memory;
+	}
+
+	void* mapGPUMemoryToCPU(VkDeviceMemory memory, uint32_t bufferSize) {
+		void* payload;
+		const VkDeviceSize memorySize = bufferSize;
+   		BAIL_ON_BAD_RESULT(vkMapMemory(this->m_device, memory, 0, memorySize, 0, (void **)&payload));
+   		return payload;
+	}
+
+	void unmapCPUMemoryBackToGPU(VkDeviceMemory memory) {
+		vkUnmapMemory(this->m_device, memory);
+	}
+
+	void applyShader(VkDeviceMemory memory, uint32_t bufferSize){
+		const VkBufferCreateInfo bufferCreateInfo = {
+	      VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
+	      0,
+	      0,
+	      bufferSize,
+	      VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
+	      VK_SHARING_MODE_EXCLUSIVE,
+	      1,
+	      &this->m_queueFamilyIndex
+	    };
+
+	    VkBuffer in_buffer;
+	    BAIL_ON_BAD_RESULT(vkCreateBuffer(this->m_device, &bufferCreateInfo, 0, &in_buffer));
+
+	    BAIL_ON_BAD_RESULT(vkBindBufferMemory(this->m_device, in_buffer, memory, 0));
+
+	    //NEED TO ALOCATE DOUBLE SPACE FOR SECOND BUFFER IF NEEDED
+	    // VkBuffer out_buffer;
+	    // BAIL_ON_BAD_RESULT(vkCreateBuffer(this->m_device, &bufferCreateInfo, 0, &out_buffer));
+
+	    // BAIL_ON_BAD_RESULT(vkBindBufferMemory(this->m_device, out_buffer, memory, bufferSize));
 	}
 
 	int getNum() {
-		return this->num;
+		return this->m_num;
 	}
 	static double version () { return 0.1; };
 

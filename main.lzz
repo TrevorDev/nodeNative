@@ -10,6 +10,12 @@ int main()
 	VulkanHelper* v = new VulkanHelper();
 	v->initDevice();
 	uint32_t bufferSize = sizeof(int32_t) * 10;
-	v->allocGPUMemory(bufferSize);
-    cout << v->num << endl;
+	VkDeviceMemory gpuMemory = (v->allocGPUMemory(bufferSize));
+	uint32_t* memory = (uint32_t*)(v->mapGPUMemoryToCPU(gpuMemory, bufferSize));
+	for (uint32_t k = 0; k < bufferSize / sizeof(int32_t); k++) {
+      memory[k] = rand();
+    }
+    v->unmapCPUMemoryBackToGPU(gpuMemory);
+    v->applyShader(gpuMemory, bufferSize);
+    cout << v->m_num << endl;
 }  
